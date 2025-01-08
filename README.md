@@ -1,3 +1,15 @@
+# BitHabit
+
+習慣化アプリは色々あるけど、「達成 / 未達成」だけじゃなくて、進捗を記録したかった。
+- 「毎日スクワット200回」なら朝100回やったのを記録したい
+- 「毎週20km走る」なら月曜に5km走ったのを記録したい
+
+更に数値目標が時間なら、その場でタイマーを動かして記録したい
+- 「毎日プランク2分」のタスクを選んでその場でタイマースタートし、停止した時間で進捗を自動で記録
+- 「毎週読書1時間」ならタイマースタートして読書開始し、読書終えたタイミングでタイマー止めて自動で記録
+
+そんなアプリがなかったので作ることにした。とりあえずPWAで。
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
