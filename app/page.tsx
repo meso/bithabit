@@ -62,6 +62,10 @@ export default function Home() {
     ));
   };
 
+  const deleteTask = (taskId: string) => {
+    setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
+  };
+
   const resetTasks = useCallback(() => {
     const now = getDebugDate();
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
@@ -124,6 +128,7 @@ export default function Home() {
             tasks={tasks}
             onComplete={completeTask}
             onSubmitProgress={submitProgress}
+            onDeleteTask={deleteTask}
           />
         </div>
       )}

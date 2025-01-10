@@ -3,14 +3,16 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useState } from 'react';
 import { ProgressModal } from './ProgressModal';
+import { DropdownMenu } from './DropdownMenu';
 
 interface TaskListProps {
   tasks: Task[];
   onComplete: (taskId: string) => void;
   onSubmitProgress: (taskId: string, progress: number) => void;
+  onDeleteTask: (taskId: string) => void;
 }
 
-export function TaskList({ tasks, onComplete, onSubmitProgress }: TaskListProps) {
+export function TaskList({ tasks, onComplete, onSubmitProgress, onDeleteTask }: TaskListProps) {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   const formatValue = (seconds: number, unit: TaskUnit) => {
@@ -50,36 +52,41 @@ export function TaskList({ tasks, onComplete, onSubmitProgress }: TaskListProps)
     <>
       <ul className="space-y-4">
         {tasks.map((task) => (
-          <li key={task.id} className="bg-white p-4 rounded-lg shadow flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold">{task.title}</h3>
-              <p className="text-sm text-gray-500">
-                {task.frequency === 'daily' ? '毎日' : task.frequency === 'weekly' ? '毎週' : '毎月'}
-                {' '}
-                {formatValue(task.target, task.unit)}
-              </p>
-              <div className="mt-2">
-                <Progress 
-                  value={calculateProgressPercentage(task.progressInSeconds, task.target)} 
-                  className="w-48" 
-                />
-                <p className="text-sm mt-1">
-                  進捗: {formatValue(task.progressInSeconds, task.unit)}
+          <li key={task.id} className="bg-white p-4 rounded-lg shadow relative">
+            <div className="absolute top-0 right-0">
+              <DropdownMenu onDelete={() => onDeleteTask(task.id)} />
+            </div>
+            <div className="flex items-center">
+              <div 
+                className="flex-grow cursor-pointer" 
+                onClick={() => !task.completed && setSelectedTask(task)}
+              >
+                <h3 className="text-lg font-semibold">{task.title}</h3>
+                <p className="text-sm text-gray-500">
+                  {task.frequency === 'daily' ? '毎日' : task.frequency === 'weekly' ? '毎週' : '毎月'}
+                  {' '}
+                  {formatValue(task.target, task.unit)}
                 </p>
-                {task.completed && task.completedAt && (
-                  <p className="text-sm text-gray-500 mt-1">
-                    完了日時: {formatCompletedAt(task.completedAt)}
+                <div className="mt-2">
+                  <Progress 
+                    value={calculateProgressPercentage(task.progressInSeconds, task.target)} 
+                    className="w-48" 
+                  />
+                  <p className="text-sm mt-1">
+                    進捗: {formatValue(task.progressInSeconds, task.unit)}
                   </p>
+                  {task.completed && task.completedAt && (
+                    <p className="text-sm text-gray-500 mt-1">
+                      完了日時: {formatCompletedAt(task.completedAt)}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="flex flex-col items-end justify-center ml-4">
+                {!task.completed && (
+                  <Button onClick={() => onComplete(task.id)} className="w-32">完了</Button>
                 )}
               </div>
-            </div>
-            <div className="flex flex-col space-y-2">
-              {!task.completed && (
-                <Button onClick={() => onComplete(task.id)}>完了</Button>
-              )}
-              {!task.completed && (
-                <Button variant="outline" onClick={() => setSelectedTask(task)}>進捗を追加</Button>
-              )}
             </div>
           </li>
         ))}

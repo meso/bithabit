@@ -1,18 +1,18 @@
 import { useState } from 'react';
-import { Menu, X } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { TaskForm } from './TaskForm';
 import { Task } from '../types/task';
 
 interface HamburgerMenuProps {
-  onAddTask: (task: Omit<Task, 'id' | 'completed' | 'progress'>) => void;
+  onAddTask: (task: Omit<Task, 'id' | 'completed' | 'progressInSeconds' | 'completedAt'>) => void;
 }
 
 export function HamburgerMenu({ onAddTask }: HamburgerMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleAddTask = (task: Omit<Task, 'id' | 'completed' | 'progress'>) => {
+  const handleAddTask = (task: Omit<Task, 'id' | 'completed' | 'progressInSeconds' | 'completedAt'>) => {
     onAddTask(task);
     setIsOpen(false);
   };
