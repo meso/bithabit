@@ -48,6 +48,13 @@ export function TaskList({ tasks, onComplete, onSubmitProgress, onDeleteTask }: 
     return `${date.getFullYear()}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
   };
 
+  const handleModalClose = (progress?: number) => {
+    if (selectedTask && progress && progress > 0) {
+      onSubmitProgress(selectedTask.id, progress);
+    }
+    setSelectedTask(null);
+  };
+
   return (
     <>
       <ul className="space-y-4">
@@ -94,7 +101,7 @@ export function TaskList({ tasks, onComplete, onSubmitProgress, onDeleteTask }: 
       <ProgressModal
         task={selectedTask}
         isOpen={!!selectedTask}
-        onClose={() => setSelectedTask(null)}
+        onClose={handleModalClose}
         onSubmit={(progress) => {
           if (selectedTask) {
             onSubmitProgress(selectedTask.id, progress);

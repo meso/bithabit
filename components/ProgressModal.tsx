@@ -8,12 +8,21 @@ import { Task } from '../types/task';
 interface ProgressModalProps {
   task: Task | null;
   isOpen: boolean;
-  onClose: () => void;
+  onClose: (progress?: number) => void;
   onSubmit: (progress: number) => void;
 }
 
 export function ProgressModal({ task, isOpen, onClose, onSubmit }: ProgressModalProps) {
   const [progress, setProgress] = useState(0);
+
+  const handleClose = () => {
+    if (task && task.unit !== '回' && task.unit !== 'ページ' && task.unit !== 'km') {
+      onClose(progress);
+    } else {
+      onClose();
+    }
+    setProgress(0);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +41,7 @@ export function ProgressModal({ task, isOpen, onClose, onSubmit }: ProgressModal
   const isTimeUnit = task.unit === '分' || task.unit === '秒' || task.unit === '時間';
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           {isTimeUnit ? (
@@ -44,6 +53,7 @@ export function ProgressModal({ task, isOpen, onClose, onSubmit }: ProgressModal
         {isTimeUnit ? (
           <Timer 
             onComplete={handleTimerComplete} 
+            onTimeUpdate={setProgress}
             unit={task.unit} 
             target={task.target} 
             currentProgressInSeconds={task.progressInSeconds}

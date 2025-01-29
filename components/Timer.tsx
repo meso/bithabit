@@ -1,18 +1,21 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { CircularProgress } from './CircularProgress';
+import { useWakeLock } from '../hooks/useWakeLock';
 
 interface TimerProps {
   onComplete: (duration: number) => void;
+  onTimeUpdate: (time: number) => void;
   unit: string;
   target: number;
   currentProgressInSeconds: number;
 }
 
-export function Timer({ onComplete, unit, target, currentProgressInSeconds }: TimerProps) {
+export function Timer({ onComplete, onTimeUpdate, unit, target, currentProgressInSeconds }: TimerProps) {
   const [isRunning, setIsRunning] = useState(false);
   const [time, setTime] = useState(0);
   const workerRef = useRef<Worker | null>(null);
+  const { requestWakeLock, releaseWakeLock } = useWakeLock();
 
   const remainingSeconds = Math.max(target - currentProgressInSeconds, 0);
 
@@ -21,14 +24,16 @@ export function Timer({ onComplete, unit, target, currentProgressInSeconds }: Ti
       workerRef.current = new Worker('/timer-worker.js');
 
       workerRef.current.onmessage = (e) => {
-        setTime(Math.floor(e.data.time / 1000));
+        const newTime = Math.floor(e.data.time / 1000);
+        setTime(newTime);
+        onTimeUpdate(newTime);
       };
 
       return () => {
         workerRef.current?.terminate();
       };
     }
-  }, []);
+  }, [onTimeUpdate]);
 
   useEffect(() => {
     if (time >= remainingSeconds) {
@@ -36,9 +41,10 @@ export function Timer({ onComplete, unit, target, currentProgressInSeconds }: Ti
     }
   }, [time, remainingSeconds]);
 
-  const handleStart = () => {
+  const handleStart = async () => {
     setIsRunning(true);
     workerRef.current?.postMessage({ action: 'start' });
+    await requestWakeLock();
   };
 
   const handleStop = () => {
@@ -46,6 +52,7 @@ export function Timer({ onComplete, unit, target, currentProgressInSeconds }: Ti
     workerRef.current?.postMessage({ action: 'stop' });
     onComplete(time);
     setTime(0);
+    releaseWakeLock();
   };
 
   const formatTime = (seconds: number) => {
