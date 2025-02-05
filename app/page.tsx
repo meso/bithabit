@@ -143,13 +143,13 @@ export default function Home() {
   }, [resetTasks]);
 
   // デバッグモードの切り替え
-  const toggleDebugMode = () => {
+  const _toggleDebugMode = () => {
     setIsDebugMode(!isDebugMode);
     debugDate = null;
   };
 
   // 時間を進める（デバッグモード用）
-  const advanceTime = (hours: number) => {
+  const _advanceTime = (hours: number) => {
     if (debugDate) {
       debugDate = new Date(debugDate.getTime() + hours * 60 * 60 * 1000);
     } else {
@@ -176,15 +176,15 @@ export default function Home() {
       {/* デバッグモード用のUI
          <div className="mt-8 p-4 border rounded">
           <h2 className="text-xl font-semibold mb-2">デバッグモード</h2>
-          <Button onClick={toggleDebugMode} className="mb-2">
+          <Button onClick={_toggleDebugMode} className="mb-2">
             {isDebugMode ? 'デバッグモードをオフ' : 'デバッグモードをオン'}
           </Button>
           {isDebugMode && (
             <div className="space-x-2">
-              <Button onClick={() => advanceTime(1)}>1時間進める</Button>
-              <Button onClick={() => advanceTime(24)}>1日進める</Button>
-              <Button onClick={() => advanceTime(24 * 7)}>1週間進める</Button>
-              <Button onClick={() => advanceTime(24 * 30)}>1ヶ月進める</Button>
+              <Button onClick={() => _advanceTime(1)}>1時間進める</Button>
+              <Button onClick={() => _advanceTime(24)}>1日進める</Button>
+              <Button onClick={() => _advanceTime(24 * 7)}>1週間進める</Button>
+              <Button onClick={() => _advanceTime(24 * 30)}>1ヶ月進める</Button>
             </div>
           )}
          </div>
