@@ -45,6 +45,7 @@ export function Timer({
     if (time >= remainingSeconds) {
       handleStop();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [time, remainingSeconds]);
 
   const handleStart = async () => {
