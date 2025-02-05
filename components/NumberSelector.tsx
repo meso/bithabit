@@ -1,5 +1,11 @@
-import React from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import React from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface NumberSelectorProps {
   value: number;
@@ -8,12 +14,12 @@ interface NumberSelectorProps {
 }
 
 export function NumberSelector({ value, onChange, max }: NumberSelectorProps) {
-  const digits = String(value).padStart(3, '0').split('');
+  const digits = String(value).padStart(3, "0").split("");
 
   const handleDigitChange = (index: number, newValue: string) => {
     const newDigits = [...digits];
     newDigits[index] = newValue;
-    const newNumber = parseInt(newDigits.join(''), 10);
+    const newNumber = parseInt(newDigits.join(""), 10);
     onChange(Math.min(newNumber, max));
   };
 
@@ -40,4 +46,3 @@ export function NumberSelector({ value, onChange, max }: NumberSelectorProps) {
     </div>
   );
 }
-

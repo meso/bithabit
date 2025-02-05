@@ -1,13 +1,13 @@
-'use client'
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { v4 as uuidv4 } from 'uuid';
-import { useLocalStorage } from '../hooks/useLocalStorage';
-import { Task, TaskUnit } from '../types/task';
-import { TaskList } from '../components/TaskList';
-import { HamburgerMenu } from '../components/HamburgerMenu';
-import { TaskStatus } from '../components/TaskStatus';
-import { Button } from '@/components/ui/button';
+import { useState, useEffect, useCallback } from "react";
+import { v4 as uuidv4 } from "uuid";
+import { useLocalStorage } from "../hooks/useLocalStorage";
+import { Task, TaskUnit } from "../types/task";
+import { TaskList } from "../components/TaskList";
+import { HamburgerMenu } from "../components/HamburgerMenu";
+import { TaskStatus } from "../components/TaskStatus";
+import { Button } from "@/components/ui/button";
 
 // デバッグモード用の時間操作関数
 let debugDate: Date | null = null;
@@ -17,10 +17,15 @@ const getDebugDate = (): Date => {
 };
 
 export default function Home() {
-  const [tasks, setTasks] = useLocalStorage<Task[]>('tasks', []);
+  const [tasks, setTasks] = useLocalStorage<Task[]>("tasks", []);
   const [isDebugMode, setIsDebugMode] = useState(false);
 
-  const addTask = (newTask: Omit<Task, 'id' | 'completed' | 'progressInSeconds' | 'completedAt'>) => {
+  const addTask = (
+    newTask: Omit<
+      Task,
+      "id" | "completed" | "progressInSeconds" | "completedAt"
+    >,
+  ) => {
     const task: Task = {
       ...newTask,
       id: uuidv4(),
@@ -29,14 +34,14 @@ export default function Home() {
       target: convertToSeconds(newTask.target, newTask.unit),
       completedAt: null,
     };
-    setTasks(prevTasks => [...prevTasks, task]);
+    setTasks((prevTasks: Task[]) => [...prevTasks, task]);
   };
 
   const convertToSeconds = (value: number, unit: TaskUnit): number => {
     switch (unit) {
-      case '分':
+      case "分":
         return value * 60;
-      case '時間':
+      case "時間":
         return value * 3600;
       default:
         return value;
@@ -44,57 +49,93 @@ export default function Home() {
   };
 
   const completeTask = (taskId: string) => {
-    setTasks(prevTasks => prevTasks.map(task =>
-      task.id === taskId ? { ...task, completed: true, completedAt: getDebugDate().getTime() } : task
-    ));
+    setTasks((prevTasks: Task[]) =>
+      prevTasks.map((task) =>
+        task.id === taskId
+          ? { ...task, completed: true, completedAt: getDebugDate().getTime() }
+          : task,
+      ),
+    );
   };
 
   const submitProgress = (taskId: string, progressInSeconds: number) => {
-    setTasks(prevTasks => prevTasks.map(task =>
-      task.id === taskId
-        ? {
-            ...task,
-            progressInSeconds: task.progressInSeconds + progressInSeconds,
-            completed: task.progressInSeconds + progressInSeconds >= task.target,
-            completedAt: task.progressInSeconds + progressInSeconds >= task.target ? getDebugDate().getTime() : null
-          }
-        : task
-    ));
+    setTasks((prevTasks: Task[]) =>
+      prevTasks.map((task) =>
+        task.id === taskId
+          ? {
+              ...task,
+              progressInSeconds: task.progressInSeconds + progressInSeconds,
+              completed:
+                task.progressInSeconds + progressInSeconds >= task.target,
+              completedAt:
+                task.progressInSeconds + progressInSeconds >= task.target
+                  ? getDebugDate().getTime()
+                  : null,
+            }
+          : task,
+      ),
+    );
   };
 
   const deleteTask = (taskId: string) => {
-    setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
+    setTasks((prevTasks: Task[]) => prevTasks.filter((task) => task.id !== taskId));
   };
 
   const resetTasks = useCallback(() => {
     const now = getDebugDate();
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-    const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1))).getTime();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-    
+    const startOfToday = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+    ).getTime();
+    const startOfWeek = new Date(
+      now.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1)),
+    ).getTime();
+    const startOfMonth = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      1,
+    ).getTime();
 
-    setTasks(prevTasks => prevTasks.map(task => {
-      if (!task.completed || !task.completedAt) return task;
+    setTasks((prevTasks: Task[]) =>
+      prevTasks.map((task) => {
+        if (!task.completed || !task.completedAt) return task;
 
-      switch (task.frequency) {
-        case 'daily':
-          if (task.completedAt < startOfToday) {
-            return { ...task, completed: false, progressInSeconds: 0, completedAt: null };
-          }
-          break;
-        case 'weekly':
-          if (task.completedAt < startOfWeek) {
-            return { ...task, completed: false, progressInSeconds: 0, completedAt: null };
-          }
-          break;
-        case 'monthly':
-          if (task.completedAt < startOfMonth) {
-            return { ...task, completed: false, progressInSeconds: 0, completedAt: null };
-          }
-          break;
-      }
-      return task;
-    }));
+        switch (task.frequency) {
+          case "daily":
+            if (task.completedAt < startOfToday) {
+              return {
+                ...task,
+                completed: false,
+                progressInSeconds: 0,
+                completedAt: null,
+              };
+            }
+            break;
+          case "weekly":
+            if (task.completedAt < startOfWeek) {
+              return {
+                ...task,
+                completed: false,
+                progressInSeconds: 0,
+                completedAt: null,
+              };
+            }
+            break;
+          case "monthly":
+            if (task.completedAt < startOfMonth) {
+              return {
+                ...task,
+                completed: false,
+                progressInSeconds: 0,
+                completedAt: null,
+              };
+            }
+            break;
+        }
+        return task;
+      }),
+    );
   }, []);
 
   useEffect(() => {
@@ -133,22 +174,21 @@ export default function Home() {
         </div>
       )}
       {/* デバッグモード用のUI
-      <div className="mt-8 p-4 border rounded">
-        <h2 className="text-xl font-semibold mb-2">デバッグモード</h2>
-        <Button onClick={toggleDebugMode} className="mb-2">
-          {isDebugMode ? 'デバッグモードをオフ' : 'デバッグモードをオン'}
-        </Button>
-        {isDebugMode && (
-          <div className="space-x-2">
-            <Button onClick={() => advanceTime(1)}>1時間進める</Button>
-            <Button onClick={() => advanceTime(24)}>1日進める</Button>
-            <Button onClick={() => advanceTime(24 * 7)}>1週間進める</Button>
-            <Button onClick={() => advanceTime(24 * 30)}>1ヶ月進める</Button>
-          </div>
-        )}
-      </div>
-       */}
+         <div className="mt-8 p-4 border rounded">
+          <h2 className="text-xl font-semibold mb-2">デバッグモード</h2>
+          <Button onClick={toggleDebugMode} className="mb-2">
+            {isDebugMode ? 'デバッグモードをオフ' : 'デバッグモードをオン'}
+          </Button>
+          {isDebugMode && (
+            <div className="space-x-2">
+              <Button onClick={() => advanceTime(1)}>1時間進める</Button>
+              <Button onClick={() => advanceTime(24)}>1日進める</Button>
+              <Button onClick={() => advanceTime(24 * 7)}>1週間進める</Button>
+              <Button onClick={() => advanceTime(24 * 30)}>1ヶ月進める</Button>
+            </div>
+          )}
+         </div>
+         */}
     </main>
   );
 }
-

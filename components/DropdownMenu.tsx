@@ -1,11 +1,11 @@
-import { MoreHorizontal, Trash } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { MoreHorizontal, Trash } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu as UIDropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
 
 interface DropdownMenuProps {
   onDelete: () => void;
@@ -28,4 +28,3 @@ export function DropdownMenu({ onDelete }: DropdownMenuProps) {
     </UIDropdownMenu>
   );
 }
-

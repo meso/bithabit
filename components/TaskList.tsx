@@ -1,9 +1,9 @@
-import { Task, TaskUnit } from '../types/task';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { useState } from 'react';
-import { ProgressModal } from './ProgressModal';
-import { DropdownMenu } from './DropdownMenu';
+import { Task, TaskUnit } from "../types/task";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { useState } from "react";
+import { ProgressModal } from "./ProgressModal";
+import { DropdownMenu } from "./DropdownMenu";
 
 interface TaskListProps {
   tasks: Task[];
@@ -12,18 +12,25 @@ interface TaskListProps {
   onDeleteTask: (taskId: string) => void;
 }
 
-export function TaskList({ tasks, onComplete, onSubmitProgress, onDeleteTask }: TaskListProps) {
+export function TaskList({
+  tasks,
+  onComplete,
+  onSubmitProgress,
+  onDeleteTask,
+}: TaskListProps) {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   const formatValue = (seconds: number, unit: TaskUnit) => {
     switch (unit) {
-      case '秒':
+      case "秒":
         return `${seconds}秒`;
-      case '分':
+      case "分":
         const minutes = Math.floor(seconds / 60);
         const remainingSeconds = seconds % 60;
-        return remainingSeconds === 0 ? `${minutes}分` : `${minutes}分${remainingSeconds}秒`;
-      case '時間':
+        return remainingSeconds === 0
+          ? `${minutes}分`
+          : `${minutes}分${remainingSeconds}秒`;
+      case "時間":
         const hours = Math.floor(seconds / 3600);
         const remainingMinutes = Math.floor((seconds % 3600) / 60);
         const remainingSeconds2 = Math.floor(seconds % 60);
@@ -39,13 +46,18 @@ export function TaskList({ tasks, onComplete, onSubmitProgress, onDeleteTask }: 
     }
   };
 
-  const calculateProgressPercentage = (progressInSeconds: number, target: number) => {
-    return progressInSeconds > target ? 100 : (progressInSeconds / target) * 100;
+  const calculateProgressPercentage = (
+    progressInSeconds: number,
+    target: number,
+  ) => {
+    return progressInSeconds > target
+      ? 100
+      : (progressInSeconds / target) * 100;
   };
 
   const formatCompletedAt = (completedAt: number) => {
     const date = new Date(completedAt);
-    return `${date.getFullYear()}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+    return `${date.getFullYear()}/${(date.getMonth() + 1).toString().padStart(2, "0")}/${date.getDate().toString().padStart(2, "0")} ${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}`;
   };
 
   const handleModalClose = (progress?: number) => {
@@ -64,21 +76,28 @@ export function TaskList({ tasks, onComplete, onSubmitProgress, onDeleteTask }: 
               <DropdownMenu onDelete={() => onDeleteTask(task.id)} />
             </div>
             <div className="flex items-center">
-              <div 
-                className="flex-grow cursor-pointer" 
+              <div
+                className="flex-grow cursor-pointer"
                 onClick={() => !task.completed && setSelectedTask(task)}
               >
                 <h3 className="text-lg font-semibold">{task.title}</h3>
                 <p className="text-sm text-gray-500">
-                  {task.frequency === 'daily' ? '毎日' : task.frequency === 'weekly' ? '毎週' : '毎月'}
-                  {' '}
+                  {task.frequency === "daily"
+                    ? "毎日"
+                    : task.frequency === "weekly"
+                      ? "毎週"
+                      : "毎月"}{" "}
                   {formatValue(task.target, task.unit)}
                 </p>
                 <div className="mt-2">
-                  <Progress 
-                    value={calculateProgressPercentage(task.progressInSeconds, task.target)} 
-                    className="w-48" 
+                  <Progress
+                    value={calculateProgressPercentage(
+                      task.progressInSeconds,
+                      task.target,
+                    )}
+                    className="w-48"
                   />
+
                   <p className="text-sm mt-1">
                     進捗: {formatValue(task.progressInSeconds, task.unit)}
                   </p>
@@ -91,7 +110,9 @@ export function TaskList({ tasks, onComplete, onSubmitProgress, onDeleteTask }: 
               </div>
               <div className="flex flex-col items-end justify-center ml-4">
                 {!task.completed && (
-                  <Button onClick={() => onComplete(task.id)} className="w-32">完了</Button>
+                  <Button onClick={() => onComplete(task.id)} className="w-32">
+                    完了
+                  </Button>
                 )}
               </div>
             </div>
@@ -112,4 +133,3 @@ export function TaskList({ tasks, onComplete, onSubmitProgress, onDeleteTask }: 
     </>
   );
 }
-

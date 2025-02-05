@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
-import { Button } from '@/components/ui/button';
-import { CircularProgress } from './CircularProgress';
-import { useWakeLock } from '../hooks/useWakeLock';
+import { useState, useEffect, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { CircularProgress } from "./CircularProgress";
+import { useWakeLock } from "../hooks/useWakeLock";
 
 interface TimerProps {
   onComplete: (duration: number) => void;
@@ -11,7 +11,13 @@ interface TimerProps {
   currentProgressInSeconds: number;
 }
 
-export function Timer({ onComplete, onTimeUpdate, unit, target, currentProgressInSeconds }: TimerProps) {
+export function Timer({
+  onComplete,
+  onTimeUpdate,
+  unit,
+  target,
+  currentProgressInSeconds,
+}: TimerProps) {
   const [isRunning, setIsRunning] = useState(false);
   const [time, setTime] = useState(0);
   const workerRef = useRef<Worker | null>(null);
@@ -20,8 +26,8 @@ export function Timer({ onComplete, onTimeUpdate, unit, target, currentProgressI
   const remainingSeconds = Math.max(target - currentProgressInSeconds, 0);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      workerRef.current = new Worker('/timer-worker.js');
+    if (typeof window !== "undefined") {
+      workerRef.current = new Worker("/timer-worker.js");
 
       workerRef.current.onmessage = (e) => {
         const newTime = Math.floor(e.data.time / 1000);
@@ -43,13 +49,13 @@ export function Timer({ onComplete, onTimeUpdate, unit, target, currentProgressI
 
   const handleStart = async () => {
     setIsRunning(true);
-    workerRef.current?.postMessage({ action: 'start' });
+    workerRef.current?.postMessage({ action: "start" });
     await requestWakeLock();
   };
 
   const handleStop = () => {
     setIsRunning(false);
-    workerRef.current?.postMessage({ action: 'stop' });
+    workerRef.current?.postMessage({ action: "stop" });
     onComplete(time);
     setTime(0);
     releaseWakeLock();
@@ -59,20 +65,26 @@ export function Timer({ onComplete, onTimeUpdate, unit, target, currentProgressI
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const remainingSeconds = seconds % 60;
-    if (unit === '時間') {
-      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    if (unit === "時間") {
+      return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`;
     } else {
-      return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+      return `${minutes.toString().padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`;
     }
   };
 
   const calculateProgress = () => {
-    return remainingSeconds > 0 ? Math.min((time / remainingSeconds) * 100, 100) : 100;
+    return remainingSeconds > 0
+      ? Math.min((time / remainingSeconds) * 100, 100)
+      : 100;
   };
 
   return (
     <div className="text-center">
-      <CircularProgress progress={calculateProgress()} size={200} strokeWidth={10}>
+      <CircularProgress
+        progress={calculateProgress()}
+        size={200}
+        strokeWidth={10}
+      >
         <div className="flex flex-col items-center justify-center h-full pt-10">
           <div className="text-4xl font-bold">{formatTime(time)}</div>
           <div className="mt-2">
@@ -90,4 +102,3 @@ export function Timer({ onComplete, onTimeUpdate, unit, target, currentProgressI
     </div>
   );
 }
-

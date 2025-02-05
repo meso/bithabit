@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from "react";
 
 interface ScrollColumnProps {
   value: number;
@@ -27,15 +27,15 @@ function ScrollColumn({ value, onChange, max }: ScrollColumnProps) {
   const numbers = Array.from({ length: max + 1 }, (_, i) => i);
 
   return (
-    <div 
+    <div
       ref={containerRef}
       className="h-[60px] w-[24px] overflow-y-scroll scrollbar-hide"
       onScroll={handleScroll}
     >
       <div className="h-[10px]" /> {/* Top spacer */}
       {numbers.map((num) => (
-        <div 
-          key={num} 
+        <div
+          key={num}
           className="h-[32px] flex items-center justify-center text-lg font-bold"
         >
           {num}
@@ -52,7 +52,11 @@ interface TripleScrollNumberPickerProps {
   max: number;
 }
 
-export function TripleScrollNumberPicker({ value, onChange, max }: TripleScrollNumberPickerProps) {
+export function TripleScrollNumberPicker({
+  value,
+  onChange,
+  max,
+}: TripleScrollNumberPickerProps) {
   const [hundreds, setHundreds] = useState(Math.floor(value / 100));
   const [tens, setTens] = useState(Math.floor((value % 100) / 10));
   const [ones, setOnes] = useState(value % 10);
@@ -65,9 +69,10 @@ export function TripleScrollNumberPicker({ value, onChange, max }: TripleScrollN
   return (
     <div className="flex space-x-1 justify-center">
       <ScrollColumn value={hundreds} onChange={setHundreds} max={9} />
+
       <ScrollColumn value={tens} onChange={setTens} max={9} />
+
       <ScrollColumn value={ones} onChange={setOnes} max={9} />
     </div>
   );
 }
-

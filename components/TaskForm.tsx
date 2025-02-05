@@ -1,28 +1,36 @@
-import { useState } from 'react';
-import { Task, TaskFrequency, TaskUnit } from '../types/task';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from '@/components/ui/label';
-import { TripleScrollNumberPicker } from './TripleScrollNumberPicker';
+import { useState } from "react";
+import { Task, TaskFrequency, TaskUnit } from "../types/task";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { TripleScrollNumberPicker } from "./TripleScrollNumberPicker";
 
 interface TaskFormProps {
-  onSubmit: (task: Omit<Task, 'id' | 'completed' | 'progressInSeconds' | 'completedAt'>) => void;
+  onSubmit: (
+    task: Omit<Task, "id" | "completed" | "progressInSeconds" | "completedAt">,
+  ) => void;
 }
 
 export function TaskForm({ onSubmit }: TaskFormProps) {
-  const [title, setTitle] = useState('');
-  const [frequency, setFrequency] = useState<TaskFrequency>('daily');
+  const [title, setTitle] = useState("");
+  const [frequency, setFrequency] = useState<TaskFrequency>("daily");
   const [target, setTarget] = useState<number>(1);
-  const [unit, setUnit] = useState<TaskUnit>('回');
+  const [unit, setUnit] = useState<TaskUnit>("回");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit({ title, frequency, target, unit });
-    setTitle('');
-    setFrequency('daily');
+    setTitle("");
+    setFrequency("daily");
     setTarget(1);
-    setUnit('回');
+    setUnit("回");
   };
 
   return (
@@ -39,7 +47,10 @@ export function TaskForm({ onSubmit }: TaskFormProps) {
       <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
         <div className="w-full sm:w-1/2">
           <Label htmlFor="frequency">頻度</Label>
-          <Select onValueChange={(value: TaskFrequency) => setFrequency(value)} value={frequency}>
+          <Select
+            onValueChange={(value: TaskFrequency) => setFrequency(value)}
+            value={frequency}
+          >
             <SelectTrigger className="w-[5rem]">
               <SelectValue placeholder="頻度を選択" />
             </SelectTrigger>
@@ -54,9 +65,16 @@ export function TaskForm({ onSubmit }: TaskFormProps) {
           <Label>数値目標</Label>
           <div className="flex items-center space-x-2">
             <div className="flex-grow border rounded-md overflow-hidden p-1">
-              <TripleScrollNumberPicker value={target} onChange={setTarget} max={999} />
+              <TripleScrollNumberPicker
+                value={target}
+                onChange={setTarget}
+                max={999}
+              />
             </div>
-            <Select onValueChange={(value: TaskUnit) => setUnit(value)} value={unit}>
+            <Select
+              onValueChange={(value: TaskUnit) => setUnit(value)}
+              value={unit}
+            >
               <SelectTrigger className="w-[5rem]">
                 <SelectValue placeholder="単位を選択" />
               </SelectTrigger>
@@ -72,8 +90,9 @@ export function TaskForm({ onSubmit }: TaskFormProps) {
           </div>
         </div>
       </div>
-      <Button type="submit" className="w-full">タスクを追加</Button>
+      <Button type="submit" className="w-full">
+        タスクを追加
+      </Button>
     </form>
   );
 }
-
