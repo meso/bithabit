@@ -3,10 +3,13 @@
 import { useState, useEffect, useCallback } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useLocalStorage } from "../hooks/useLocalStorage";
+import { useActivityLog } from "../hooks/useActivityLog";
 import { Task, TaskUnit } from "../types/task";
 import { TaskList } from "../components/TaskList";
 import { HamburgerMenu } from "../components/HamburgerMenu";
 import { TaskStatus } from "../components/TaskStatus";
+import { ContributionGraph } from "../components/ContributionGraph";
+import { PointsDisplay } from "../components/PointsDisplay";
 // import { Button } from "@/components/ui/button";
 
 // デバッグモード用の時間操作関数
@@ -19,11 +22,12 @@ const getDebugDate = (): Date => {
 export default function Home() {
   const [tasks, setTasks] = useLocalStorage<Task[]>("tasks", []);
   const [isDebugMode, setIsDebugMode] = useState(false);
+  const { activityLog, logTaskActivity } = useActivityLog();
 
   const addTask = (
     newTask: Omit<
       Task,
-      "id" | "completed" | "progressInSeconds" | "completedAt"
+      "id" | "completed" | "progressInSeconds" | "completedAt" | "points"
     >,
   ) => {
     const task: Task = {
@@ -33,6 +37,7 @@ export default function Home() {
       progressInSeconds: 0,
       target: convertToSeconds(newTask.target, newTask.unit),
       completedAt: null,
+      points: 0,
     };
     setTasks((prevTasks: Task[]) => [...prevTasks, task]);
   };
@@ -50,30 +55,45 @@ export default function Home() {
 
   const completeTask = (taskId: string) => {
     setTasks((prevTasks: Task[]) =>
-      prevTasks.map((task) =>
-        task.id === taskId
-          ? { ...task, completed: true, completedAt: getDebugDate().getTime() }
-          : task,
-      ),
+      prevTasks.map((task) => {
+        if (task.id === taskId) {
+          const now = getDebugDate().getTime();
+          // アクティビティログに記録
+          const earnedPoints = logTaskActivity(task, task.target, true);
+          
+          return { 
+            ...task, 
+            completed: true, 
+            completedAt: now,
+            points: (task.points || 0) + earnedPoints
+          };
+        }
+        return task;
+      }),
     );
   };
 
   const submitProgress = (taskId: string, progressInSeconds: number) => {
     setTasks((prevTasks: Task[]) =>
-      prevTasks.map((task) =>
-        task.id === taskId
-          ? {
-              ...task,
-              progressInSeconds: task.progressInSeconds + progressInSeconds,
-              completed:
-                task.progressInSeconds + progressInSeconds >= task.target,
-              completedAt:
-                task.progressInSeconds + progressInSeconds >= task.target
-                  ? getDebugDate().getTime()
-                  : null,
-            }
-          : task,
-      ),
+      prevTasks.map((task) => {
+        if (task.id === taskId) {
+          const newProgress = task.progressInSeconds + progressInSeconds;
+          const completed = newProgress >= task.target;
+          const now = getDebugDate().getTime();
+          
+          // アクティビティログに記録
+          const earnedPoints = logTaskActivity(task, progressInSeconds, completed);
+          
+          return {
+            ...task,
+            progressInSeconds: newProgress,
+            completed,
+            completedAt: completed ? now : null,
+            points: (task.points || 0) + earnedPoints
+          };
+        }
+        return task;
+      }),
     );
   };
 
@@ -163,7 +183,19 @@ export default function Home() {
     <main className="container mx-auto p-4 relative">
       <h1 className="text-2xl font-bold mb-4">BitHabit</h1>
       <HamburgerMenu onAddTask={addTask} />
+      
+      {/* ポイント表示としゅうかん牧場を横に並べる */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
+        <div className="h-full flex flex-col">
+          <PointsDisplay activityLog={activityLog} />
+        </div>
+        <div className="h-full flex flex-col">
+          <ContributionGraph activityLog={activityLog} />
+        </div>
+      </div>
+      
       <TaskStatus tasks={tasks} />
+      
       {tasks.length > 0 && (
         <div className="my-4">
           <TaskList
@@ -174,22 +206,45 @@ export default function Home() {
           />
         </div>
       )}
-      {/* デバッグモード用のUI
-         <div className="mt-8 p-4 border rounded">
-          <h2 className="text-xl font-semibold mb-2">デバッグモード</h2>
-          <Button onClick={_toggleDebugMode} className="mb-2">
-            {isDebugMode ? 'デバッグモードをオフ' : 'デバッグモードをオン'}
-          </Button>
-          {isDebugMode && (
-            <div className="space-x-2">
-              <Button onClick={() => _advanceTime(1)}>1時間進める</Button>
-              <Button onClick={() => _advanceTime(24)}>1日進める</Button>
-              <Button onClick={() => _advanceTime(24 * 7)}>1週間進める</Button>
-              <Button onClick={() => _advanceTime(24 * 30)}>1ヶ月進める</Button>
-            </div>
-          )}
-         </div>
-         */}
+      
+      {/* デバッグモード用のUI */}
+      <div className="mt-8 p-4 border rounded">
+        <h2 className="text-xl font-semibold mb-2">デバッグモード</h2>
+        <button 
+          onClick={_toggleDebugMode} 
+          className="mb-2 px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+        >
+          {isDebugMode ? 'デバッグモードをオフ' : 'デバッグモードをオン'}
+        </button>
+        {isDebugMode && (
+          <div className="space-x-2">
+            <button 
+              onClick={() => _advanceTime(1)} 
+              className="px-3 py-1 bg-blue-100 rounded hover:bg-blue-200"
+            >
+              1時間進める
+            </button>
+            <button 
+              onClick={() => _advanceTime(24)} 
+              className="px-3 py-1 bg-blue-100 rounded hover:bg-blue-200"
+            >
+              1日進める
+            </button>
+            <button 
+              onClick={() => _advanceTime(24 * 7)} 
+              className="px-3 py-1 bg-blue-100 rounded hover:bg-blue-200"
+            >
+              1週間進める
+            </button>
+            <button 
+              onClick={() => _advanceTime(24 * 30)} 
+              className="px-3 py-1 bg-blue-100 rounded hover:bg-blue-200"
+            >
+              1ヶ月進める
+            </button>
+          </div>
+        )}
+      </div>
     </main>
   );
 }
