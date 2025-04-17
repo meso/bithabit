@@ -208,11 +208,13 @@ export default function Home() {
         </div>
       )}
       
-      <DebugControls
-        isDebugMode={isDebugMode}
-        toggleDebugMode={_toggleDebugMode}
-        advanceTime={_advanceTime}
-      />
+      {process.env.NODE_ENV !== "production" && (
+        <DebugControls
+          isDebugMode={isDebugMode}
+          toggleDebugMode={_toggleDebugMode}
+          advanceTime={_advanceTime}
+        />
+      )}
     </main>
   );
 }
