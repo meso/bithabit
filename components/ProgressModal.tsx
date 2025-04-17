@@ -6,9 +6,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { TripleScrollNumberPicker } from "./TripleScrollNumberPicker";
-import { Timer } from "./Timer";
-import { Task } from "../types/task";
+import { TripleScrollNumberPicker } from "@/components/TripleScrollNumberPicker";
+import { Timer } from "@/components/Timer";
+import { Task } from "@/types/task";
 
 interface ProgressModalProps {
   task: Task | null;

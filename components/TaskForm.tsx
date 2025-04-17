@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Task, TaskFrequency, TaskUnit } from "../types/task";
+import { Task, TaskFrequency, TaskUnit } from "@/types/task";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { TripleScrollNumberPicker } from "./TripleScrollNumberPicker";
+import { TripleScrollNumberPicker } from "@/components/TripleScrollNumberPicker";
 
 interface TaskFormProps {
   onSubmit: (

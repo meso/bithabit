@@ -1,5 +1,5 @@
-import { useLocalStorage } from './useLocalStorage';
-import { ActivityEntry, DailyActivity, Task, TaskFrequency } from '../types/task';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { ActivityEntry, DailyActivity, Task, TaskFrequency } from '@/types/task';
 
 export function useActivityLog() {
   const [activityLog, setActivityLog] = useLocalStorage<DailyActivity[]>("activityLog", []);

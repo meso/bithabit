@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Task } from "../types/task";
+import { Task } from "@/types/task";
 
 interface TaskStatusProps {
   tasks: Task[];

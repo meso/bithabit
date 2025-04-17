@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { DailyActivity } from '../types/task';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { DailyActivity } from '@/types/task';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface PointsDisplayProps {
   activityLog: DailyActivity[];

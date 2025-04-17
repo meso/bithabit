@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { CircularProgress } from "./CircularProgress";
-import { useWakeLock } from "../hooks/useWakeLock";
+import { CircularProgress } from "@/components/CircularProgress";
+import { useWakeLock } from "@/hooks/useWakeLock";
 
 interface TimerProps {
   onComplete: (duration: number) => void;

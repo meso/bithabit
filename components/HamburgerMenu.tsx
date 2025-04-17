@@ -8,8 +8,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { TaskForm } from "./TaskForm";
-import { Task } from "../types/task";
+import { TaskForm } from "@/components/TaskForm";
+import { Task } from "@/types/task";
 
 interface HamburgerMenuProps {
   onAddTask: (

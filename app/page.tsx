@@ -2,14 +2,15 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { useLocalStorage } from "../hooks/useLocalStorage";
-import { useActivityLog } from "../hooks/useActivityLog";
-import { Task, TaskUnit } from "../types/task";
-import { TaskList } from "../components/TaskList";
-import { HamburgerMenu } from "../components/HamburgerMenu";
-import { TaskStatus } from "../components/TaskStatus";
-import { ContributionGraph } from "../components/ContributionGraph";
-import { PointsDisplay } from "../components/PointsDisplay";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { useActivityLog } from "@/hooks/useActivityLog";
+import { Task, TaskUnit } from "@/types/task";
+import { TaskList } from "@/components/TaskList";
+import { HamburgerMenu } from "@/components/HamburgerMenu";
+import { TaskStatus } from "@/components/TaskStatus";
+import { ContributionGraph } from "@/components/ContributionGraph";
+import { PointsDisplay } from "@/components/PointsDisplay";
+import { DebugControls } from "@/components/DebugControls";
 // import { Button } from "@/components/ui/button";
 
 // デバッグモード用の時間操作関数
@@ -207,44 +208,11 @@ export default function Home() {
         </div>
       )}
       
-      {/* デバッグモード用のUI */}
-      <div className="mt-8 p-4 border rounded">
-        <h2 className="text-xl font-semibold mb-2">デバッグモード</h2>
-        <button 
-          onClick={_toggleDebugMode} 
-          className="mb-2 px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
-        >
-          {isDebugMode ? 'デバッグモードをオフ' : 'デバッグモードをオン'}
-        </button>
-        {isDebugMode && (
-          <div className="space-x-2">
-            <button 
-              onClick={() => _advanceTime(1)} 
-              className="px-3 py-1 bg-blue-100 rounded hover:bg-blue-200"
-            >
-              1時間進める
-            </button>
-            <button 
-              onClick={() => _advanceTime(24)} 
-              className="px-3 py-1 bg-blue-100 rounded hover:bg-blue-200"
-            >
-              1日進める
-            </button>
-            <button 
-              onClick={() => _advanceTime(24 * 7)} 
-              className="px-3 py-1 bg-blue-100 rounded hover:bg-blue-200"
-            >
-              1週間進める
-            </button>
-            <button 
-              onClick={() => _advanceTime(24 * 30)} 
-              className="px-3 py-1 bg-blue-100 rounded hover:bg-blue-200"
-            >
-              1ヶ月進める
-            </button>
-          </div>
-        )}
-      </div>
+      <DebugControls
+        isDebugMode={isDebugMode}
+        toggleDebugMode={_toggleDebugMode}
+        advanceTime={_advanceTime}
+      />
     </main>
   );
 }

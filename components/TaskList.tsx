@@ -1,9 +1,9 @@
-import { Task, TaskUnit } from "../types/task";
+import { Task, TaskUnit } from "@/types/task";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useState } from "react";
-import { ProgressModal } from "./ProgressModal";
-import { DropdownMenu } from "./DropdownMenu";
+import { ProgressModal } from "@/components/ProgressModal";
+import { DropdownMenu } from "@/components/DropdownMenu";
 
 interface TaskListProps {
   tasks: Task[];
