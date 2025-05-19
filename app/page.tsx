@@ -110,7 +110,9 @@ export default function Home() {
       now.getDate(),
     ).getTime();
     const startOfWeek = new Date(
-      now.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1)),
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() - (now.getDay() === 0 ? 6 : now.getDay() - 1),
     ).getTime();
     const startOfMonth = new Date(
       now.getFullYear(),
