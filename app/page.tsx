@@ -11,7 +11,7 @@ import { TaskStatus } from "@/components/TaskStatus";
 import { ContributionGraph } from "@/components/ContributionGraph";
 import { PointsDisplay } from "@/components/PointsDisplay";
 import { DebugControls } from "@/components/DebugControls";
-// import { Button } from "@/components/ui/button";
+import { toSeconds } from "@/lib/utils";
 
 // デバッグモード用の時間操作関数
 let debugDate: Date | null = null;
@@ -36,22 +36,11 @@ export default function Home() {
       id: uuidv4(),
       completed: false,
       progressInSeconds: 0,
-      target: convertToSeconds(newTask.target, newTask.unit),
+      target: toSeconds(newTask.target, newTask.unit),
       completedAt: null,
       points: 0,
     };
     setTasks((prevTasks: Task[]) => [task, ...prevTasks]);
-  };
-
-  const convertToSeconds = (value: number, unit: TaskUnit): number => {
-    switch (unit) {
-      case "分":
-        return value * 60;
-      case "時間":
-        return value * 3600;
-      default:
-        return value;
-    }
   };
 
   const completeTask = (taskId: string) => {
