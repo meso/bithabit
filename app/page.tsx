@@ -40,7 +40,7 @@ export default function Home() {
       completedAt: null,
       points: 0,
     };
-    setTasks((prevTasks: Task[]) => [...prevTasks, task]);
+    setTasks((prevTasks: Task[]) => [task, ...prevTasks]);
   };
 
   const convertToSeconds = (value: number, unit: TaskUnit): number => {

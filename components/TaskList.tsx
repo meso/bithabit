@@ -67,11 +67,23 @@ export function TaskList({
     setSelectedTask(null);
   };
 
+  // 完了済みタスクを下に移動
+  const sortedTasks = [...tasks].sort((a, b) => {
+    if (a.completed !== b.completed) {
+      return a.completed ? 1 : -1; // 未完了を上に
+    }
+    return 0; // 同じ完了状態なら元の順序を維持
+  });
+
   return (
     <>
       <ul className="space-y-4">
-        {tasks.map((task) => (
-          <li key={task.id} className="bg-white p-4 rounded-lg shadow relative">
+        {sortedTasks.map((task) => (
+          <li key={task.id} className={`p-4 rounded-lg shadow relative ${
+            task.completed 
+              ? 'bg-gray-100 opacity-60' 
+              : 'bg-white'
+          }`}>
             <div className="absolute top-0 right-0">
               <DropdownMenu onDelete={() => onDeleteTask(task.id)} />
             </div>
@@ -80,7 +92,9 @@ export function TaskList({
                 className="flex-grow cursor-pointer"
                 onClick={() => !task.completed && setSelectedTask(task)}
               >
-                <h3 className="text-lg font-semibold">{task.title}</h3>
+                <h3 className={`text-lg font-semibold ${
+                  task.completed ? 'text-gray-500' : ''
+                }`}>{task.title}</h3>
                 <p className="text-sm text-gray-500">
                   {task.frequency === "daily"
                     ? "毎日"
