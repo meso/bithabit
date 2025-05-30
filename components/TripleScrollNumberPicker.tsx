@@ -64,7 +64,8 @@ export function TripleScrollNumberPicker({
   useEffect(() => {
     const newValue = hundreds * 100 + tens * 10 + ones;
     onChange(Math.min(newValue, max));
-  }, [hundreds, tens, ones, onChange, max]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hundreds, tens, ones, max]);
 
   return (
     <div className="flex space-x-1 justify-center">

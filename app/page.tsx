@@ -159,8 +159,7 @@ export default function Home() {
         return task;
       }),
     );
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);  // setTasksを依存配列から意図的に除外
+  }, [setTasks]);
 
   useEffect(() => {
     resetTasks();

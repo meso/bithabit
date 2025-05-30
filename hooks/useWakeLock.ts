@@ -14,6 +14,7 @@ export function useWakeLock(type: WakeLockType = 'screen') {
         return wakeLock;
       } catch (err) {
         console.error(`Failed to request Wake Lock: ${err}`);
+        setWakeLock(null);
       }
     } else {
       console.error('Wake Lock API is not supported in this browser');
@@ -30,6 +31,7 @@ export function useWakeLock(type: WakeLockType = 'screen') {
         })
         .catch((err) => {
           console.error(`Failed to release Wake Lock: ${err}`);
+          setWakeLock(null);
         });
     }
   };

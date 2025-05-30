@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { CircularProgress } from "@/components/CircularProgress";
 import { useWakeLock } from "@/hooks/useWakeLock";
@@ -41,25 +41,24 @@ export function Timer({
     }
   }, [onTimeUpdate]);
 
-  useEffect(() => {
-    if (time >= remainingSeconds) {
-      handleStop();
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [time, remainingSeconds]);
-
-  const handleStart = async () => {
-    setIsRunning(true);
-    workerRef.current?.postMessage({ action: "start" });
-    await requestWakeLock();
-  };
-
-  const handleStop = () => {
+  const handleStop = useCallback(() => {
     setIsRunning(false);
     workerRef.current?.postMessage({ action: "stop" });
     onComplete(time);
     setTime(0);
     releaseWakeLock();
+  }, [onComplete, time, releaseWakeLock]);
+
+  useEffect(() => {
+    if (time >= remainingSeconds) {
+      handleStop();
+    }
+  }, [time, remainingSeconds, handleStop]);
+
+  const handleStart = async () => {
+    setIsRunning(true);
+    workerRef.current?.postMessage({ action: "start" });
+    await requestWakeLock();
   };
 
   const formatTime = (seconds: number) => {

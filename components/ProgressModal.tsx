@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -24,6 +24,23 @@ export function ProgressModal({
   onSubmit,
 }: ProgressModalProps) {
   const [progress, setProgress] = useState(0);
+  const [isWorkerAvailable, setIsWorkerAvailable] = useState(true);
+
+  const isTimeUnit =
+    task?.unit === "分" || task?.unit === "秒" || task?.unit === "時間";
+
+  useEffect(() => {
+    if (isTimeUnit && typeof window !== "undefined") {
+      try {
+        const testWorker = new Worker("/timer-worker.js");
+        testWorker.terminate();
+        setIsWorkerAvailable(true);
+      } catch (error) {
+        console.error('Timer worker not available:', error);
+        setIsWorkerAvailable(false);
+      }
+    }
+  }, [isTimeUnit]);
 
   const handleClose = () => {
     if (
@@ -53,20 +70,17 @@ export function ProgressModal({
 
   if (!task) return null;
 
-  const isTimeUnit =
-    task.unit === "分" || task.unit === "秒" || task.unit === "時間";
-
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          {isTimeUnit ? (
+          {isTimeUnit && isWorkerAvailable ? (
             <DialogTitle>{task.title} タイマー</DialogTitle>
           ) : (
             <DialogTitle>進捗更新: {task.title}</DialogTitle>
           )}
         </DialogHeader>
-        {isTimeUnit ? (
+        {isTimeUnit && isWorkerAvailable ? (
           <Timer
             onComplete={handleTimerComplete}
             onTimeUpdate={setProgress}
