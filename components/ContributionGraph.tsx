@@ -82,19 +82,22 @@ export function ContributionGraph({ activityLog, days = 91 }: ContributionGraphP
         
         if (intensity > 0 && position && position.length === 2) {
           const [weekIndex, dayIndex] = position;
+          const parentElement = svgRef.current?.parentElement;
           
-          // Calculate position based on grid structure
-          // Each cell is 28px wide with 4px gap, positioned after day labels (24px)
-          const cellX = 24 + (weekIndex * 32); // 28px cell + 4px gap
-          const cellY = dayIndex * 32; // 28px cell + 4px gap
-          
-          greenCells.push({
-            x: cellX * (800 / svgRef.current.parentElement!.offsetWidth),
-            y: cellY * (300 / svgRef.current.parentElement!.offsetHeight),
-            intensity,
-            weekIndex,
-            dayIndex
-          });
+          if (parentElement) {
+            // Calculate position based on grid structure
+            // Each cell is 28px wide with 4px gap, positioned after day labels (24px)
+            const cellX = 24 + (weekIndex * 32); // 28px cell + 4px gap
+            const cellY = dayIndex * 32; // 28px cell + 4px gap
+            
+            greenCells.push({
+              x: cellX * (800 / parentElement.offsetWidth),
+              y: cellY * (300 / parentElement.offsetHeight),
+              intensity,
+              weekIndex,
+              dayIndex
+            });
+          }
         }
       });
       
