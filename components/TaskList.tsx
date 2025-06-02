@@ -1,4 +1,4 @@
-import { Task, TaskUnit } from "@/types/task";
+import { Task } from "@/types/task";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useState } from "react";

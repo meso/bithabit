@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useActivityLog } from "@/hooks/useActivityLog";
-import { Task, TaskUnit } from "@/types/task";
+import { Task } from "@/types/task";
 import { TaskList } from "@/components/TaskList";
 import { HamburgerMenu } from "@/components/HamburgerMenu";
 import { TaskStatus } from "@/components/TaskStatus";
