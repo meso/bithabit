@@ -1,6 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { DailyActivity } from '@/types/task';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PixelDinosaur } from './PixelDinosaur';
 
 interface ContributionGraphProps {
   activityLog: DailyActivity[];
@@ -9,6 +10,10 @@ interface ContributionGraphProps {
 
 export function ContributionGraph({ activityLog, days = 91 }: ContributionGraphProps) {
   const [selectedDay, setSelectedDay] = useState<DailyActivity | null>(null);
+  const [dinosaurPosition, setDinosaurPosition] = useState({ x: -100, y: 50 });
+  const [isEating, setIsEating] = useState(false);
+  const [targetGrass, setTargetGrass] = useState<{ x: number; y: number; weekIndex: number; dayIndex: number } | null>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
 
   // 指定された日数分の日付配列を生成
   const dateRange = useMemo(() => {
@@ -63,41 +68,138 @@ export function ContributionGraph({ activityLog, days = 91 }: ContributionGraphP
     return 4;
   };
 
+  // Find green cells (grass) positions
+  useEffect(() => {
+    const findGreenCells = () => {
+      if (!svgRef.current) return;
+      
+      const greenCells: { x: number; y: number; intensity: number; weekIndex: number; dayIndex: number }[] = [];
+      const cells = svgRef.current.parentElement?.querySelectorAll('[data-intensity]');
+      
+      cells?.forEach((cell) => {
+        const intensity = parseInt(cell.getAttribute('data-intensity') || '0');
+        const position = cell.getAttribute('data-position')?.split('-').map(Number);
+        
+        if (intensity > 0 && position && position.length === 2) {
+          const [weekIndex, dayIndex] = position;
+          
+          // Calculate position based on grid structure
+          // Each cell is 28px wide with 4px gap, positioned after day labels (24px)
+          const cellX = 24 + (weekIndex * 32); // 28px cell + 4px gap
+          const cellY = dayIndex * 32; // 28px cell + 4px gap
+          
+          greenCells.push({
+            x: cellX * (800 / svgRef.current.parentElement!.offsetWidth),
+            y: cellY * (300 / svgRef.current.parentElement!.offsetHeight),
+            intensity,
+            weekIndex,
+            dayIndex
+          });
+        }
+      });
+      
+      if (greenCells.length > 0) {
+        // Select a random green cell as target
+        const randomTarget = greenCells[Math.floor(Math.random() * greenCells.length)];
+        setTargetGrass(randomTarget);
+      }
+    };
+    
+    // Initial scan
+    setTimeout(findGreenCells, 1000);
+    
+    // Rescan every 10 seconds
+    const interval = setInterval(findGreenCells, 10000);
+    
+    return () => clearInterval(interval);
+  }, []);
+
+  // Animate dinosaur movement
+  useEffect(() => {
+    if (!targetGrass) return;
+    
+    let animationFrame: number;
+    let startTime: number;
+    const duration = 3000; // 3 seconds to reach target
+    
+    const animate = (currentTime: number) => {
+      if (!startTime) startTime = currentTime;
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      // Easing function for smooth movement
+      const easeProgress = 1 - Math.pow(1 - progress, 3);
+      
+      const newX = -100 + (targetGrass.x - (-100)) * easeProgress;
+      const newY = 50 + (targetGrass.y - 50) * easeProgress;
+      
+      setDinosaurPosition({ x: newX, y: newY });
+      
+      if (progress < 1) {
+        animationFrame = requestAnimationFrame(animate);
+      } else {
+        // Start eating animation
+        setIsEating(true);
+        
+        // Stop eating and move to next target after 2 seconds
+        setTimeout(() => {
+          setIsEating(false);
+          setDinosaurPosition({ x: -100, y: 50 });
+          setTargetGrass(null);
+        }, 2000);
+      }
+    };
+    
+    animationFrame = requestAnimationFrame(animate);
+    
+    return () => {
+      if (animationFrame) cancelAnimationFrame(animationFrame);
+    };
+  }, [targetGrass]);
+
   // 週ごとのグリッドに整理（GitHub風の正確な表示のため）
   const weeks = useMemo(() => {
     const result = [];
     
-    // 日付範囲の最初の日の曜日を取得
-    // let startDate = new Date(dateRange[0]);
+    // 最初の月曜日を見つける
+    let startIndex = 0;
+    for (let i = 0; i < dateRange.length; i++) {
+      const date = new Date(dateRange[i]);
+      if (date.getDay() === 1) { // 月曜日
+        startIndex = i;
+        break;
+      }
+    }
     
-    // 曜日マッピング（0: 日曜日, 1: 月曜日, 2: 火曜日, ..., 6: 土曜日）
-    // ただし、表示では月曜日を先頭にするので、配列のインデックスは以下のように調整
-    // 0: 月, 1: 火, 2: 水, 3: 木, 4: 金, 5: 土, 6: 日
-    
-    let currentDateIndex = 0;
+    let currentDateIndex = startIndex;
     
     // 日付範囲を週ごとに分割
     while (currentDateIndex < dateRange.length) {
       const weekData = Array(7).fill(null); // 7日分の配列（月〜日）
       
       // 1週間分処理
-      for (let i = 0; i < 7 && currentDateIndex < dateRange.length; i++) {
+      for (let dayIndex = 0; dayIndex < 7 && currentDateIndex < dateRange.length; dayIndex++) {
         const dateStr = dateRange[currentDateIndex];
         const date = new Date(dateStr);
         const dayOfWeek = date.getDay(); // 0（日曜）から6（土曜）
         
         // 曜日を月曜始まりに変換（月:0, 火:1, 水:2, 木:3, 金:4, 土:5, 日:6）
-        const adjustedDayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+        const expectedDayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
         
-        const activity = activitiesByDate.get(dateStr);
-        if (activity) {
-          weekData[adjustedDayIndex] = activity;
+        // 期待される曜日と一致する場合のみ配置
+        if (expectedDayIndex === dayIndex) {
+          const activity = activitiesByDate.get(dateStr);
+          if (activity) {
+            weekData[dayIndex] = activity;
+          }
+          currentDateIndex++;
         }
-        
-        currentDateIndex++;
       }
       
-      result.push(weekData);
+      // 空の週は追加しない
+      if (weekData.some(day => day !== null)) {
+        result.push(weekData);
+      }
     }
     
     return result;
@@ -140,7 +242,7 @@ export function ContributionGraph({ activityLog, days = 91 }: ContributionGraphP
             </div>
             
             {/* 日付グリッド部分 - 同じコンテナ内に配置 */}
-            <div className="flex">
+            <div className="flex relative">
               {/* 曜日のラベル（縦方向） */}
               <div className="flex flex-col gap-1 mr-1">
                 <div className="w-6 h-7 flex items-center justify-center text-xs text-gray-500">月</div>
@@ -153,7 +255,17 @@ export function ContributionGraph({ activityLog, days = 91 }: ContributionGraphP
               </div>
               
               {/* 週ごとのコラム */}
-              <div className="flex flex-col">
+              <div className="flex flex-col relative">
+                {/* SVG for dinosaur animation */}
+                <svg
+                  ref={svgRef}
+                  className="absolute inset-0 pointer-events-none z-10"
+                  style={{ width: '100%', height: '100%' }}
+                  viewBox="0 0 800 300"
+                  preserveAspectRatio="none"
+                >
+                  <PixelDinosaur x={dinosaurPosition.x} y={dinosaurPosition.y} isEating={isEating} />
+                </svg>
                 {/* 曜日ごとの行 */}
                 {Array.from({ length: 7 }).map((_, dayOfWeek) => (
                   <div key={`day-row-${dayOfWeek}`} className="flex gap-1 mb-1">
@@ -166,6 +278,8 @@ export function ContributionGraph({ activityLog, days = 91 }: ContributionGraphP
                         <div
                           key={`day-${day.date}`}
                           className={`w-7 h-7 rounded-sm cursor-pointer transition-all duration-200 hover:scale-110`}
+                          data-intensity={intensity}
+                          data-position={`${weekIndex}-${dayOfWeek}`}
                           style={{
                             backgroundColor: intensity === 0 
                               ? '#ebedf0' 
