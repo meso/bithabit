@@ -51,7 +51,7 @@ export function TaskForm({ onSubmit }: TaskFormProps) {
             onValueChange={(value: TaskFrequency) => setFrequency(value)}
             value={frequency}
           >
-            <SelectTrigger className="w-[5rem]">
+            <SelectTrigger className="min-w-[5rem] w-full">
               <SelectValue placeholder="頻度を選択" />
             </SelectTrigger>
             <SelectContent>
@@ -75,7 +75,7 @@ export function TaskForm({ onSubmit }: TaskFormProps) {
               onValueChange={(value: TaskUnit) => setUnit(value)}
               value={unit}
             >
-              <SelectTrigger className="w-[5rem]">
+              <SelectTrigger className="min-w-[5rem] w-auto">
                 <SelectValue placeholder="単位を選択" />
               </SelectTrigger>
               <SelectContent>
