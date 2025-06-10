@@ -7,12 +7,12 @@ import { useTaskManager } from "@/hooks/useTaskManager";
 import { useDebugMode } from "@/hooks/useDebugMode";
 import { useTaskReset } from "@/hooks/useTaskReset";
 import { Task } from "@/types/task";
-import TaskList from "@/components/TaskList";
+import { TaskList } from "@/components/TaskList";
 import { HamburgerMenu } from "@/components/HamburgerMenu";
-import TaskStatus from "@/components/TaskStatus";
-import ContributionGraph from "@/components/ContributionGraph";
-import PointsDisplay from "@/components/PointsDisplay";
-import DebugControls from "@/components/DebugControls";
+import { TaskStatus } from "@/components/TaskStatus";
+import { ContributionGraph } from "@/components/ContributionGraph";
+import { PointsDisplay } from "@/components/PointsDisplay";
+import { DebugControls } from "@/components/DebugControls";
 import { toSeconds } from "@/lib/utils";
 
 
