@@ -19,14 +19,14 @@ import { toSeconds } from "@/lib/utils";
 export function BitHabitClient() {
   const [tasks, setTasks] = useLocalStorage<Task[]>("tasks", []);
   const { activityLog, logTaskActivity } = useActivityLog();
-  const { debugMode, debugDate, toggleDebugMode, advanceDebugTime, resetDebugDate } = useDebugMode();
+  const { debugMode, debugDate, toggleDebugMode, advanceDebugTime } = useDebugMode();
   const { addTask, completeTask, submitProgress, deleteTask } = useTaskManager({
     tasks,
     setTasks,
     logTaskActivity,
     debugDate
   });
-  const { resetTasks } = useTaskReset({ tasks, setTasks, debugDate });
+  useTaskReset({ tasks, setTasks, debugDate });
 
 
   // Handle adding tasks with proper format for useTaskManager
