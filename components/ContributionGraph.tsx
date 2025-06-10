@@ -69,37 +69,6 @@ export function ContributionGraph({ activityLog, days = 91 }: ContributionGraphP
     return 4;
   }, []);
 
-  // Calculate green cells positions based on state
-  useEffect(() => {
-    const cells: { x: number; y: number; intensity: number; weekIndex: number; dayIndex: number }[] = [];
-    
-    weeks.forEach((week, weekIndex) => {
-      week.forEach((day, dayIndex) => {
-        if (day) {
-          const intensity = getIntensity(day.totalPoints);
-          if (intensity > 0) {
-            // Calculate position based on grid structure
-            // Each cell is 28px wide with 4px gap, positioned after day labels (24px)
-            const cellX = 24 + (weekIndex * 32); // 28px cell + 4px gap
-            const cellY = dayIndex * 32; // 28px cell + 4px gap
-            
-            cells.push({
-              x: cellX,
-              y: cellY,
-              intensity,
-              weekIndex,
-              dayIndex
-            });
-          }
-        }
-      });
-    });
-    
-    startTransition(() => {
-      setGreenCells(cells);
-    });
-  }, [weeks, getIntensity]);
-
   // Select random target grass
   useEffect(() => {
     if (greenCells.length === 0 || targetGrass) return;
@@ -220,6 +189,37 @@ export function ContributionGraph({ activityLog, days = 91 }: ContributionGraphP
     return result;
   }, [dateRange, activitiesByDate]);
 
+  // Calculate green cells positions based on state
+  useEffect(() => {
+    const cells: { x: number; y: number; intensity: number; weekIndex: number; dayIndex: number }[] = [];
+    
+    weeks.forEach((week, weekIndex) => {
+      week.forEach((day, dayIndex) => {
+        if (day) {
+          const intensity = getIntensity(day.totalPoints);
+          if (intensity > 0) {
+            // Calculate position based on grid structure
+            // Each cell is 28px wide with 4px gap, positioned after day labels (24px)
+            const cellX = 24 + (weekIndex * 32); // 28px cell + 4px gap
+            const cellY = dayIndex * 32; // 28px cell + 4px gap
+            
+            cells.push({
+              x: cellX,
+              y: cellY,
+              intensity,
+              weekIndex,
+              dayIndex
+            });
+          }
+        }
+      });
+    });
+    
+    startTransition(() => {
+      setGreenCells(cells);
+    });
+  }, [weeks, getIntensity]);
+
   // 日付の表示形式を整形
   const formatDate = (dateStr: string): string => {
     const date = new Date(dateStr);
@@ -240,8 +240,9 @@ export function ContributionGraph({ activityLog, days = 91 }: ContributionGraphP
               <div className="flex gap-1 justify-center ml-7">
                 {weeks.map((week, weekIndex) => {
                   // 月の最初の週だけ月名を表示
-                  if (week.length > 0) {
-                    const date = new Date(week[0].date);
+                  const firstDay = week.find(day => day !== null);
+                  if (firstDay) {
+                    const date = new Date(firstDay.date);
                     const isFirstWeekOfMonth = date.getDate() <= 7;
                     if (isFirstWeekOfMonth || weekIndex === 0) {
                       return (
