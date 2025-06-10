@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { v4 as uuidv4 } from "uuid";
+import { useCallback } from "react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useActivityLog } from "@/hooks/useActivityLog";
+import { useTaskManager } from "@/hooks/useTaskManager";
+import { useDebugMode } from "@/hooks/useDebugMode";
+import { useTaskReset } from "@/hooks/useTaskReset";
 import { Task } from "@/types/task";
 import { TaskList } from "@/components/TaskList";
 import { HamburgerMenu } from "@/components/HamburgerMenu";
@@ -13,166 +15,41 @@ import { PointsDisplay } from "@/components/PointsDisplay";
 import { DebugControls } from "@/components/DebugControls";
 import { toSeconds } from "@/lib/utils";
 
-// デバッグモード用の時間操作関数
-let debugDate: Date | null = null;
-
-const getDebugDate = (): Date => {
-  return debugDate || new Date();
-};
 
 export function BitHabitClient() {
   const [tasks, setTasks] = useLocalStorage<Task[]>("tasks", []);
-  const [isDebugMode, setIsDebugMode] = useState(false);
   const { activityLog, logTaskActivity } = useActivityLog();
+  const { debugMode, debugDate, toggleDebugMode, advanceDebugTime } = useDebugMode();
+  const { addTask, completeTask, submitProgress, deleteTask } = useTaskManager({
+    tasks,
+    setTasks,
+    logTaskActivity,
+    debugDate
+  });
+  useTaskReset({ tasks, setTasks, debugDate });
 
-  const addTask = (
+
+  // Handle adding tasks with proper format for useTaskManager
+  const handleAddTask = useCallback((
     newTask: Omit<
       Task,
       "id" | "completed" | "progressInSeconds" | "completedAt" | "points"
     >,
   ) => {
-    const task: Task = {
+    const taskWithSeconds = {
       ...newTask,
-      id: uuidv4(),
+      target: toSeconds(newTask.target, newTask.unit),
       completed: false,
       progressInSeconds: 0,
-      target: toSeconds(newTask.target, newTask.unit),
       completedAt: null,
       points: 0,
     };
-    setTasks((prevTasks: Task[]) => [task, ...prevTasks]);
-  };
-
-  const completeTask = (taskId: string) => {
-    setTasks((prevTasks: Task[]) =>
-      prevTasks.map((task) => {
-        if (task.id === taskId) {
-          const now = getDebugDate().getTime();
-          // アクティビティログに記録
-          const earnedPoints = logTaskActivity(task, task.target, true);
-          
-          return { 
-            ...task, 
-            completed: true, 
-            completedAt: now,
-            points: (task.points || 0) + earnedPoints
-          };
-        }
-        return task;
-      }),
-    );
-  };
-
-  const submitProgress = (taskId: string, progressInSeconds: number) => {
-    setTasks((prevTasks: Task[]) =>
-      prevTasks.map((task) => {
-        if (task.id === taskId) {
-          const newProgress = task.progressInSeconds + progressInSeconds;
-          const completed = newProgress >= task.target;
-          const now = getDebugDate().getTime();
-          
-          // アクティビティログに記録
-          const earnedPoints = logTaskActivity(task, progressInSeconds, completed);
-          
-          return {
-            ...task,
-            progressInSeconds: newProgress,
-            completed,
-            completedAt: completed ? now : null,
-            points: (task.points || 0) + earnedPoints
-          };
-        }
-        return task;
-      }),
-    );
-  };
-
-  const deleteTask = (taskId: string) => {
-    setTasks((prevTasks: Task[]) => prevTasks.filter((task) => task.id !== taskId));
-  };
-
-  const resetTasks = useCallback(() => {
-    const now = getDebugDate();
-    const startOfToday = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate(),
-    ).getTime();
-    const startOfWeek = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate() - (now.getDay() === 0 ? 6 : now.getDay() - 1),
-    ).getTime();
-    const startOfMonth = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      1,
-    ).getTime();
-
-    setTasks((prevTasks: Task[]) =>
-      prevTasks.map((task) => {
-        if (!task.completed || !task.completedAt) return task;
-
-        switch (task.frequency) {
-          case "daily":
-            if (task.completedAt < startOfToday) {
-              return {
-                ...task,
-                completed: false,
-                progressInSeconds: 0,
-                completedAt: null,
-              };
-            }
-            break;
-          case "weekly":
-            if (task.completedAt < startOfWeek) {
-              return {
-                ...task,
-                completed: false,
-                progressInSeconds: 0,
-                completedAt: null,
-              };
-            }
-            break;
-          case "monthly":
-            if (task.completedAt < startOfMonth) {
-              return {
-                ...task,
-                completed: false,
-                progressInSeconds: 0,
-                completedAt: null,
-              };
-            }
-            break;
-        }
-        return task;
-      }),
-    );
-  }, [setTasks]);
-
-  useEffect(() => {
-    resetTasks();
-  }, [resetTasks]);
-
-  // デバッグモードの切り替え
-  const _toggleDebugMode = () => {
-    setIsDebugMode(!isDebugMode);
-    debugDate = null;
-  };
-
-  // 時間を進める（デバッグモード用）
-  const _advanceTime = (hours: number) => {
-    if (debugDate) {
-      debugDate = new Date(debugDate.getTime() + hours * 60 * 60 * 1000);
-    } else {
-      debugDate = new Date(getDebugDate().getTime() + hours * 60 * 60 * 1000);
-    }
-    resetTasks();
-  };
+    addTask(taskWithSeconds);
+  }, [addTask]);
 
   return (
     <>
-      <HamburgerMenu onAddTask={addTask} />
+      <HamburgerMenu onAddTask={handleAddTask} />
       
       {/* ポイント表示としゅうかん牧場を横に並べる */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
@@ -199,9 +76,9 @@ export function BitHabitClient() {
       
       {process.env.NODE_ENV !== "production" && (
         <DebugControls
-          isDebugMode={isDebugMode}
-          toggleDebugMode={_toggleDebugMode}
-          advanceTime={_advanceTime}
+          isDebugMode={debugMode}
+          toggleDebugMode={toggleDebugMode}
+          advanceTime={advanceDebugTime}
         />
       )}
     </>
