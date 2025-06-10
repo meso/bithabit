@@ -1,12 +1,13 @@
-import { useState, useEffect, useCallback } from 'react';
-
-// Error notification state to avoid multiple alerts
-let hasNotifiedError = false;
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 export function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T | ((val: T) => T)) => void, { error: Error | null }] {
   // Keep initial state consistent between server and client to avoid hydration mismatch
   const [storedValue, setStoredValue] = useState<T>(initialValue);
   const [error, setError] = useState<Error | null>(null);
+  
+  // Use ref to track error notification state per hook instance
+  const lastErrorNotificationRef = useRef<number>(0);
+  const ERROR_NOTIFICATION_COOLDOWN = 5000; // 5 seconds cooldown
 
   // On mount, load stored value from localStorage
   // We only depend on `key` to avoid infinite loops from changing `initialValue` reference
@@ -23,21 +24,25 @@ export function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T 
         setStoredValue(initialValue);
         setError(error as Error);
         
-        // User notification
-        if (!hasNotifiedError) {
-          hasNotifiedError = true;
+        // User notification with cooldown
+        const now = Date.now();
+        if (now - lastErrorNotificationRef.current > ERROR_NOTIFICATION_COOLDOWN) {
+          lastErrorNotificationRef.current = now;
           const message = 'データの読み込みに失敗しました。一部の設定がリセットされる可能性があります。';
           
-          // Show notification if available
-          if ('Notification' in window && Notification.permission === 'granted') {
-            new Notification('ストレージエラー', { body: message });
-          } else {
-            // Fallback to console warning (less intrusive than alert)
-            console.warn(message);
-          }
+          // Log to console for debugging
+          console.warn(message);
           
-          // Reset flag after a delay
-          setTimeout(() => { hasNotifiedError = false; }, 5000);
+          // Only show notification if permission is granted and not in focus
+          if ('Notification' in window && 
+              Notification.permission === 'granted' && 
+              !document.hasFocus()) {
+            new Notification('ストレージエラー', { 
+              body: message,
+              requireInteraction: false,
+              silent: true
+            });
+          }
         }
         
         try {
@@ -64,13 +69,23 @@ export function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T 
             console.error('LocalStorage write error:', storageError);
             setError(storageError as Error);
             
-            // Notify user about storage quota issues
+            // Notify user about storage quota issues with cooldown
             if (storageError instanceof DOMException && storageError.name === 'QuotaExceededError') {
-              const message = 'ストレージ容量が不足しています。古いデータを削除してください。';
-              if ('Notification' in window && Notification.permission === 'granted') {
-                new Notification('ストレージ容量不足', { body: message });
-              } else {
+              const now = Date.now();
+              if (now - lastErrorNotificationRef.current > ERROR_NOTIFICATION_COOLDOWN) {
+                lastErrorNotificationRef.current = now;
+                const message = 'ストレージ容量が不足しています。古いデータを削除してください。';
                 console.warn(message);
+                
+                if ('Notification' in window && 
+                    Notification.permission === 'granted' && 
+                    !document.hasFocus()) {
+                  new Notification('ストレージ容量不足', { 
+                    body: message,
+                    requireInteraction: false,
+                    silent: true
+                  });
+                }
               }
             }
           }

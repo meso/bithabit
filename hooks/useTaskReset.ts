@@ -1,18 +1,25 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { Task } from '@/types/task';
-import { TaskActivityLogEntry } from './useTaskManager';
 
 interface UseTaskResetProps {
   tasks: Task[];
   setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
-  addActivityLogEntry: (entry: TaskActivityLogEntry) => void;
   debugDate: Date | null;
 }
 
-export function useTaskReset({ tasks, setTasks, addActivityLogEntry, debugDate }: UseTaskResetProps) {
-  const currentDate = debugDate || new Date();
+export function useTaskReset({ tasks, setTasks, debugDate }: UseTaskResetProps) {
+  // Store refs to avoid recreating callbacks
+  const setTasksRef = useRef(setTasks);
+  const debugDateRef = useRef(debugDate);
+
+  // Update refs when props change
+  useEffect(() => {
+    setTasksRef.current = setTasks;
+    debugDateRef.current = debugDate;
+  });
 
   const resetTasks = useCallback(() => {
+    const currentDate = debugDateRef.current || new Date();
     const startOfToday = new Date(currentDate);
     startOfToday.setHours(0, 0, 0, 0);
 
@@ -29,7 +36,7 @@ export function useTaskReset({ tasks, setTasks, addActivityLogEntry, debugDate }
     );
     startOfMonth.setHours(0, 0, 0, 0);
 
-    setTasks((prevTasks) =>
+    setTasksRef.current((prevTasks) =>
       prevTasks.map((task) => {
         if (!task.completedAt || !task.completed) {
           return task;
@@ -51,27 +58,20 @@ export function useTaskReset({ tasks, setTasks, addActivityLogEntry, debugDate }
         }
 
         if (shouldReset) {
-          addActivityLogEntry({
-            taskId: task.id,
-            taskName: task.title,
-            taskEmoji: '',
-            taskFrequency: task.frequency,
-            action: 'reset',
-          });
           return { ...task, completed: false, progressInSeconds: 0, completedAt: null };
         }
 
         return task;
       })
     );
-  }, [currentDate, setTasks, addActivityLogEntry]);
+  }, []); // No dependencies, uses refs instead
 
   // Check for task resets periodically
   useEffect(() => {
     resetTasks();
     const interval = setInterval(resetTasks, 60000); // Check every minute
     return () => clearInterval(interval);
-  }, [resetTasks]);
+  }, []); // Only run once on mount
 
   return { resetTasks };
 }
