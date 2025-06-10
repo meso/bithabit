@@ -1,11 +1,11 @@
 import { useEffect, useCallback } from 'react';
 import { Task } from '@/types/task';
-import { ActivityLogEntry } from './useActivityLog';
+import { TaskActivityLogEntry } from './useTaskManager';
 
 interface UseTaskResetProps {
   tasks: Task[];
   setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
-  addActivityLogEntry: (entry: Omit<ActivityLogEntry, 'id' | 'timestamp'>) => void;
+  addActivityLogEntry: (entry: TaskActivityLogEntry) => void;
   debugDate: Date | null;
 }
 

@@ -1,11 +1,19 @@
 import { useCallback } from 'react';
 import { Task } from '@/types/task';
-import { ActivityLogEntry } from './useActivityLog';
+
+// Define the type for activity log entries used by the task manager
+export interface TaskActivityLogEntry {
+  taskId: string;
+  taskName: string;
+  taskEmoji: string;
+  taskFrequency: string;
+  action: 'created' | 'completed' | 'deleted' | 'reset';
+}
 
 interface UseTaskManagerProps {
   tasks: Task[];
   setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
-  addActivityLogEntry: (entry: Omit<ActivityLogEntry, 'id' | 'timestamp'>) => void;
+  addActivityLogEntry: (entry: TaskActivityLogEntry) => void;
   debugDate: Date | null;
 }
 
