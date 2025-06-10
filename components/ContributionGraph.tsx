@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, startTransition } from 'react';
 import { DailyActivity } from '@/types/task';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PixelDinosaur } from './PixelDinosaur';
@@ -14,6 +14,7 @@ export function ContributionGraph({ activityLog, days = 91 }: ContributionGraphP
   const [isEating, setIsEating] = useState(false);
   const [targetGrass, setTargetGrass] = useState<{ x: number; y: number; weekIndex: number; dayIndex: number } | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
+  const [greenCells, setGreenCells] = useState<{ x: number; y: number; intensity: number; weekIndex: number; dayIndex: number }[]>([]);
 
   // 指定された日数分の日付配列を生成
   const dateRange = useMemo(() => {
@@ -60,62 +61,40 @@ export function ContributionGraph({ activityLog, days = 91 }: ContributionGraphP
   }, [activityLog, dateRange]);
 
   // 色の強度を計算（0-4のレベル）
-  const getIntensity = (points: number): number => {
+  const getIntensity = useMemo(() => (points: number): number => {
     if (points === 0) return 0;
     if (points <= 2) return 1;
     if (points <= 5) return 2;
     if (points <= 10) return 3;
     return 4;
-  };
+  }, []);
 
-  // Find green cells (grass) positions
+  // Select random target grass
   useEffect(() => {
-    const findGreenCells = () => {
-      if (!svgRef.current) return;
-      
-      const greenCells: { x: number; y: number; intensity: number; weekIndex: number; dayIndex: number }[] = [];
-      const cells = svgRef.current.parentElement?.querySelectorAll('[data-intensity]');
-      
-      cells?.forEach((cell) => {
-        const intensity = parseInt(cell.getAttribute('data-intensity') || '0');
-        const position = cell.getAttribute('data-position')?.split('-').map(Number);
-        
-        if (intensity > 0 && position && position.length === 2) {
-          const [weekIndex, dayIndex] = position;
-          const parentElement = svgRef.current?.parentElement;
-          
-          if (parentElement) {
-            // Calculate position based on grid structure
-            // Each cell is 28px wide with 4px gap, positioned after day labels (24px)
-            const cellX = 24 + (weekIndex * 32); // 28px cell + 4px gap
-            const cellY = dayIndex * 32; // 28px cell + 4px gap
-            
-            greenCells.push({
-              x: cellX * (800 / parentElement.offsetWidth),
-              y: cellY * (300 / parentElement.offsetHeight),
-              intensity,
-              weekIndex,
-              dayIndex
-            });
-          }
-        }
-      });
-      
+    if (greenCells.length === 0 || targetGrass) return;
+    
+    const selectTarget = () => {
       if (greenCells.length > 0) {
-        // Select a random green cell as target
         const randomTarget = greenCells[Math.floor(Math.random() * greenCells.length)];
         setTargetGrass(randomTarget);
       }
     };
     
-    // Initial scan
-    setTimeout(findGreenCells, 1000);
+    // Initial selection after a delay
+    const timeout = setTimeout(selectTarget, 1000);
     
-    // Rescan every 10 seconds
-    const interval = setInterval(findGreenCells, 10000);
+    // Reselect every 10 seconds
+    const interval = setInterval(() => {
+      if (!isEating) {
+        selectTarget();
+      }
+    }, 10000);
     
-    return () => clearInterval(interval);
-  }, []);
+    return () => {
+      clearTimeout(timeout);
+      clearInterval(interval);
+    };
+  }, [greenCells, targetGrass, isEating]);
 
   // Animate dinosaur movement
   useEffect(() => {
@@ -136,7 +115,9 @@ export function ContributionGraph({ activityLog, days = 91 }: ContributionGraphP
       const newX = -100 + (targetGrass.x - (-100)) * easeProgress;
       const newY = 50 + (targetGrass.y - 50) * easeProgress;
       
-      setDinosaurPosition({ x: newX, y: newY });
+      startTransition(() => {
+        setDinosaurPosition({ x: newX, y: newY });
+      });
       
       if (progress < 1) {
         animationFrame = requestAnimationFrame(animate);
@@ -208,6 +189,37 @@ export function ContributionGraph({ activityLog, days = 91 }: ContributionGraphP
     return result;
   }, [dateRange, activitiesByDate]);
 
+  // Calculate green cells positions based on state
+  useEffect(() => {
+    const cells: { x: number; y: number; intensity: number; weekIndex: number; dayIndex: number }[] = [];
+    
+    weeks.forEach((week, weekIndex) => {
+      week.forEach((day, dayIndex) => {
+        if (day) {
+          const intensity = getIntensity(day.totalPoints);
+          if (intensity > 0) {
+            // Calculate position based on grid structure
+            // Each cell is 28px wide with 4px gap, positioned after day labels (24px)
+            const cellX = 24 + (weekIndex * 32); // 28px cell + 4px gap
+            const cellY = dayIndex * 32; // 28px cell + 4px gap
+            
+            cells.push({
+              x: cellX,
+              y: cellY,
+              intensity,
+              weekIndex,
+              dayIndex
+            });
+          }
+        }
+      });
+    });
+    
+    startTransition(() => {
+      setGreenCells(cells);
+    });
+  }, [weeks, getIntensity]);
+
   // 日付の表示形式を整形
   const formatDate = (dateStr: string): string => {
     const date = new Date(dateStr);
@@ -228,8 +240,9 @@ export function ContributionGraph({ activityLog, days = 91 }: ContributionGraphP
               <div className="flex gap-1 justify-center ml-7">
                 {weeks.map((week, weekIndex) => {
                   // 月の最初の週だけ月名を表示
-                  if (week.length > 0) {
-                    const date = new Date(week[0].date);
+                  const firstDay = week.find(day => day !== null);
+                  if (firstDay) {
+                    const date = new Date(firstDay.date);
                     const isFirstWeekOfMonth = date.getDate() <= 7;
                     if (isFirstWeekOfMonth || weekIndex === 0) {
                       return (
@@ -281,8 +294,6 @@ export function ContributionGraph({ activityLog, days = 91 }: ContributionGraphP
                         <div
                           key={`day-${day.date}`}
                           className={`w-7 h-7 rounded-sm cursor-pointer transition-all duration-200 hover:scale-110`}
-                          data-intensity={intensity}
-                          data-position={`${weekIndex}-${dayOfWeek}`}
                           style={{
                             backgroundColor: intensity === 0 
                               ? '#ebedf0' 
