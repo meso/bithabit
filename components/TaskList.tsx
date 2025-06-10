@@ -1,7 +1,7 @@
 import { Task } from "@/types/task";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { ProgressModal } from "@/components/ProgressModal";
 import { DropdownMenu } from "@/components/DropdownMenu";
 import { formatTaskValue, formatDateTime } from "@/lib/utils";
@@ -40,12 +40,15 @@ export function TaskList({
   };
 
   // 完了済みタスクを下に移動
-  const sortedTasks = [...tasks].sort((a, b) => {
-    if (a.completed !== b.completed) {
-      return a.completed ? 1 : -1; // 未完了を上に
-    }
-    return 0; // 同じ完了状態なら元の順序を維持
-  });
+  const sortedTasks = useMemo(() => 
+    [...tasks].sort((a, b) => {
+      if (a.completed !== b.completed) {
+        return a.completed ? 1 : -1; // 未完了を上に
+      }
+      return 0; // 同じ完了状態なら元の順序を維持
+    }), 
+    [tasks]
+  );
 
   return (
     <>

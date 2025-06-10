@@ -6,17 +6,20 @@ describe("useLocalStorage", () => {
   it("初期値が取得できる", () => {
     const { result } = renderHook(() => useLocalStorage("test-key", 123));
     expect(result.current[0]).toBe(123);
+    expect(result.current[2].error).toBeNull();
   });
 
   it("値が更新できる", () => {
     const { result } = renderHook(() => useLocalStorage("test-key2", 0));
     act(() => result.current[1](42));
     expect(result.current[0]).toBe(42);
+    expect(result.current[2].error).toBeNull();
   });
 
   it("関数で値が更新できる", () => {
     const { result } = renderHook(() => useLocalStorage("test-key3", 10));
     act(() => result.current[1](prev => prev + 5));
     expect(result.current[0]).toBe(15);
+    expect(result.current[2].error).toBeNull();
   });
 });
