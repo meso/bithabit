@@ -33,7 +33,7 @@ jobs:
 
             - name: Run Claude Code
               id: claude
-              uses: anthropics/claude-code-action@beta
+              uses: meso/claude-code-action@main
               with:
                   use_oauth: 'true'
                   claude_access_token: ${{ secrets.CLAUDE_ACCESS_TOKEN }}
