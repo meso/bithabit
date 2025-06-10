@@ -25,18 +25,27 @@ export function Timer({
 
   const remainingSeconds = Math.max(target - currentProgressInSeconds, 0);
 
+  // Create worker only once on mount
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && !workerRef.current) {
       workerRef.current = new Worker("/timer-worker.js");
+    }
 
+    return () => {
+      if (workerRef.current) {
+        workerRef.current.terminate();
+        workerRef.current = null;
+      }
+    };
+  }, []);
+
+  // Set up message handler separately to avoid recreating worker
+  useEffect(() => {
+    if (workerRef.current) {
       workerRef.current.onmessage = (e) => {
         const newTime = Math.floor(e.data.time / 1000);
         setTime(newTime);
         onTimeUpdate(newTime);
-      };
-
-      return () => {
-        workerRef.current?.terminate();
       };
     }
   }, [onTimeUpdate]);
