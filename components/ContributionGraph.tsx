@@ -8,7 +8,7 @@ interface ContributionGraphProps {
   days?: number;
 }
 
-export function ContributionGraph({ activityLog, days = 91 }: ContributionGraphProps) {
+export function ContributionGraph({ activityLog, days = 77 }: ContributionGraphProps) {
   const [selectedDay, setSelectedDay] = useState<DailyActivity | null>(null);
   const [dinosaurPosition, setDinosaurPosition] = useState({ x: -100, y: 50 });
   const [isEating, setIsEating] = useState(false);
@@ -241,7 +241,7 @@ export function ContributionGraph({ activityLog, days = 91 }: ContributionGraphP
           <div className="w-full max-w-3xl mx-auto flex flex-col items-center">
             {/* 月表示（上部） */}
             <div className="mb-1 w-full">
-              <div className="flex gap-1 justify-center ml-7">
+              <div className="flex gap-1 justify-center ml-6">
                 {weeks.map((week, weekIndex) => {
                   // 月の最初の週だけ月名を表示
                   const firstDay = week.find(day => day !== null);
@@ -264,7 +264,7 @@ export function ContributionGraph({ activityLog, days = 91 }: ContributionGraphP
             {/* 日付グリッド部分 - 同じコンテナ内に配置 */}
             <div className="flex relative">
               {/* 曜日のラベル（縦方向） */}
-              <div className="flex flex-col gap-1 mr-1">
+              <div className="flex flex-col gap-1 mr-0.5">
                 <div className="w-6 h-7 flex items-center justify-center text-xs text-gray-500">月</div>
                 <div className="w-6 h-7 flex items-center justify-center text-xs text-gray-500">火</div>
                 <div className="w-6 h-7 flex items-center justify-center text-xs text-gray-500">水</div>
