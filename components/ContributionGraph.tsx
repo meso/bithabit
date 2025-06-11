@@ -8,7 +8,7 @@ interface ContributionGraphProps {
   days?: number;
 }
 
-export function ContributionGraph({ activityLog, days = 77 }: ContributionGraphProps) {
+export function ContributionGraph({ activityLog, days = 70 }: ContributionGraphProps) {
   const [selectedDay, setSelectedDay] = useState<DailyActivity | null>(null);
   const [dinosaurPosition, setDinosaurPosition] = useState({ x: -100, y: 50 });
   const [isEating, setIsEating] = useState(false);
