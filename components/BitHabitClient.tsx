@@ -56,7 +56,7 @@ export function BitHabitClient() {
         <div className="h-full flex flex-col">
           <PointsDisplay activityLog={activityLog} />
         </div>
-        <div className="h-full flex flex-col">
+        <div className="h-full flex flex-col overflow-hidden">
           <ContributionGraph activityLog={activityLog} />
         </div>
       </div>

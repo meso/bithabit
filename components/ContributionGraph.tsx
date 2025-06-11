@@ -231,7 +231,7 @@ export function ContributionGraph({ activityLog, days = 91 }: ContributionGraphP
       <CardHeader>
         <CardTitle className="text-xl">しゅうかん牧場</CardTitle>
       </CardHeader>
-      <CardContent className="h-full">
+      <CardContent className="h-full overflow-x-auto scrollbar-hide">
         <div className="flex flex-col items-center">
           {/* 中央揃えのコンテナ - 月表示と日付グリッドの両方を含む */}
           <div className="w-full max-w-3xl mx-auto flex flex-col items-center">
@@ -258,7 +258,7 @@ export function ContributionGraph({ activityLog, days = 91 }: ContributionGraphP
             </div>
             
             {/* 日付グリッド部分 - 同じコンテナ内に配置 */}
-            <div className="flex relative">
+            <div className="flex relative min-w-fit">
               {/* 曜日のラベル（縦方向） */}
               <div className="flex flex-col gap-1 mr-1">
                 <div className="w-6 h-7 flex items-center justify-center text-xs text-gray-500">月</div>
@@ -277,8 +277,8 @@ export function ContributionGraph({ activityLog, days = 91 }: ContributionGraphP
                   ref={svgRef}
                   className="absolute inset-0 pointer-events-none z-10"
                   style={{ width: '100%', height: '100%' }}
-                  viewBox="0 0 800 300"
-                  preserveAspectRatio="none"
+                  viewBox={`0 0 ${weeks.length * 32 + 50} 300`}
+                  preserveAspectRatio="xMidYMid meet"
                 >
                   <PixelDinosaur x={dinosaurPosition.x} y={dinosaurPosition.y} isEating={isEating} />
                 </svg>
