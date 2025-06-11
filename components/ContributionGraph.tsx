@@ -204,7 +204,7 @@ export function ContributionGraph({ activityLog, days = 91 }: ContributionGraphP
           const intensity = getIntensity(day.totalPoints);
           if (intensity > 0) {
             // Calculate center position of each cell
-            const cellX = labelWidth + gap + (weekIndex * (cellSize + gap)) + cellSize / 2;
+            const cellX = labelWidth + gap + (weekIndex * (cellSize + gap)) + cellSize / 2 - cellSize * 2; // 2マス左に移動
             const cellY = (dayIndex * (cellSize + gap)) + cellSize / 2 - cellSize / 2; // 縦方向に半分上にずらす
             
             cells.push({
