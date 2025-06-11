@@ -193,15 +193,19 @@ export function ContributionGraph({ activityLog, days = 91 }: ContributionGraphP
   useEffect(() => {
     const cells: { x: number; y: number; intensity: number; weekIndex: number; dayIndex: number }[] = [];
     
+    // Get actual grid dimensions
+    const labelWidth = 24; // w-6
+    const cellSize = 28; // w-7
+    const gap = 4; // gap-1
+    
     weeks.forEach((week, weekIndex) => {
       week.forEach((day, dayIndex) => {
         if (day) {
           const intensity = getIntensity(day.totalPoints);
           if (intensity > 0) {
-            // Calculate position based on grid structure
-            // Each cell is 28px wide with 4px gap, positioned after day labels (24px)
-            const cellX = 24 + (weekIndex * 32); // 28px cell + 4px gap
-            const cellY = dayIndex * 32; // 28px cell + 4px gap
+            // Calculate center position of each cell
+            const cellX = labelWidth + gap + (weekIndex * (cellSize + gap)) + cellSize / 2;
+            const cellY = (dayIndex * (cellSize + gap)) + cellSize / 2 - cellSize / 2; // 縦方向に半分上にずらす
             
             cells.push({
               x: cellX,
@@ -277,7 +281,7 @@ export function ContributionGraph({ activityLog, days = 91 }: ContributionGraphP
                   ref={svgRef}
                   className="absolute inset-0 pointer-events-none z-10"
                   style={{ width: '100%', height: '100%' }}
-                  viewBox="0 0 800 300"
+                  viewBox={`0 0 ${28 + 4 + weeks.length * 32} ${7 * 32}`}
                   preserveAspectRatio="none"
                 >
                   <PixelDinosaur x={dinosaurPosition.x} y={dinosaurPosition.y} isEating={isEating} />
